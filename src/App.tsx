@@ -12,7 +12,7 @@ import React, { useState, useEffect, useRef, MutableRefObject } from 'react';
 import { 
   SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, useColorScheme,
   View,Image,ImageBackground
-} from 'react-native';
+} from 'react-native';/*  */
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import LineGradient from 'react-native-linear-gradient';
 
@@ -24,7 +24,7 @@ interface MoodItem {
 
 const App = () => {
   const [moodList, setMoodList] = useState<MoodItem []>([]);
-  const [height, setHeight] = useState<number>(0);
+  const [height, setHeight] = useState<number[]>([]);
   const [activeId, setActiveId] = useState<string>('');
   const maxHeight: MutableRefObject<any> = useRef(0);
 
@@ -51,6 +51,37 @@ const App = () => {
     }
   }
 
+  /**
+   * 获取星期几名称样式
+   * @param moodCount 
+   * @returns 
+   */
+  const getActiveStyle = (moodCount: number) => {
+    const activeStyle = {
+      elevation: 4,
+      backgroundColor: 'white',
+      borderRadius: 7
+    };
+    switch (true) {
+      case moodCount >= 90:
+        return {
+          ...activeStyle,
+          color: '#F36A1B'
+        }
+      case moodCount < 90 && moodCount >= 80:
+        return {
+          ...activeStyle,
+          color: '#52C873'
+        }
+      default:
+        return {
+          ...activeStyle,
+          color: '#CFCFCF'
+        }
+    }
+  }
+
+
    /**
    * 根据指数值获取表情图
    * @param moodCount 
@@ -73,11 +104,23 @@ const App = () => {
    */
   const getAnimateFn = () => {
     let animateId = 0;
+    const step = 8;
     const runAnimation = () => {
       animateId = requestAnimationFrame(() => {
-        maxHeight.current += 7;
-        setHeight(maxHeight.current);
-        if (maxHeight.current > 245) {
+        
+        maxHeight.current += step;
+        const heightArr = [];
+        for(let i = 0; i < 7; i++) {
+          let hVal = maxHeight.current - 2 * i * step;
+          if (hVal > 296) {
+            hVal = 296
+          } else if(hVal < 0) {
+            hVal = 0;
+          }
+          heightArr.push(hVal)
+        }
+        setHeight(heightArr);
+        if ((heightArr[6] || 0) > 296) {
           return cancelAnimationFrame(animateId)
         }
         runAnimation();
@@ -150,20 +193,27 @@ const App = () => {
           <View style={styles.middleLine} />
             {
               moodList.map((item: MoodItem, index: number) => (
-                <View key={item.id} style={styles.chatItem}>
-                  <View 
-                    style={[styles.barWrapper, {
-                      height: (item.moodCount > 33 ? item.moodCount : 34) * height  / 100
-                    }, activeId === item.id && styles.actived]}
-                    onTouchStart={() => setActiveId(item.id)}
-                    onTouchEnd={() => setActiveId('')}
+                <View key={item.id} style={[styles.chatItem]}>
+                  <View style={[styles.itemContent, {
+                      height: (item.moodCount > 44 ? item.moodCount : 45) * (height[index] || 0)  / 100,
+                    }, activeId === item.id && styles.contentActived]}
                   >
-                    <LineGradient colors={getBgColors(item.id, item.moodCount)} style={styles.lGWrapper}>
-                      <Text style={styles.countText}>{item.moodCount > 0 ? item.moodCount : ''}</Text>
-                      <Image style={styles.countImg} source={getImgSrc(item.moodCount)} />
-                    </LineGradient>
+                    <View 
+                      style={[styles.barWrapper, activeId === item.id && styles.actived]}
+                      onTouchStart={() => setActiveId(item.id)}
+                      onTouchEnd={() => setActiveId('')}
+                    >
+                      <LineGradient colors={getBgColors(item.id, item.moodCount)} style={styles.lGWrapper}>
+                        <Text style={styles.countText}>{item.moodCount > 0 ? item.moodCount : ''}</Text>
+                        <Image style={styles.countImg} source={getImgSrc(item.moodCount)} />
+                      </LineGradient>
+                    </View>
+                    <Text style={[
+                      styles.dayText, 
+                      index === moodList.length - 1 && styles.mainDay, 
+                      activeId === item.id && getActiveStyle(item.moodCount)
+                    ]}>{item.dayName}</Text>
                   </View>
-                  <Text style={[styles.dayText, index ===  moodList.length - 1 && styles.mainDay]}>{item.dayName}</Text>
                 </View>
               ))
             }
@@ -255,14 +305,26 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center'
   },
+  itemContent: {
+    width: 40,
+    height: 0,
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  contentActived: {
+    overflow: 'visible'
+  },
   barWrapper: {
     width: 40,
+    flex: 1,
     overflow: 'hidden',
-    borderRadius: 28
   },
   actived: {
     transform: [{ scaleX: 1.2 }, { scaleY: 1.05 }],
-    elevation: 5
+    elevation: 2,
+    borderWidth: 0.1,
+    borderColor: 'transparent',
+    borderRadius: 28
   },
   lGWrapper: {
     width: '100%',
@@ -270,7 +332,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 11,
-    paddingBottom: 4
+    paddingBottom: 4,
+    borderRadius: 28
   },
   countText: {
     fontSize: 18,
@@ -296,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2D2F33',
     borderRadius: 7,
     color: 'white'
-  }
+  },
 });
 
 export default App;
