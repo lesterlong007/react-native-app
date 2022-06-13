@@ -104,7 +104,7 @@ const App = () => {
    */
   const getAnimateFn = () => {
     let animateId = 0;
-    const step = 12;
+    const step = 50;
     const runAnimation = () => {
       animateId = requestAnimationFrame(() => {
         
