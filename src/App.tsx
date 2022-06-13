@@ -104,7 +104,7 @@ const App = () => {
    */
   const getAnimateFn = () => {
     let animateId = 0;
-    const step = 8;
+    const step = 12;
     const runAnimation = () => {
       animateId = requestAnimationFrame(() => {
         
@@ -112,15 +112,15 @@ const App = () => {
         const heightArr = [];
         for(let i = 0; i < 7; i++) {
           let hVal = maxHeight.current - 2 * i * step;
-          if (hVal > 296) {
-            hVal = 296
+          if (hVal > 300) {
+            hVal = 300
           } else if(hVal < 0) {
             hVal = 0;
           }
           heightArr.push(hVal)
         }
         setHeight(heightArr);
-        if ((heightArr[6] || 0) > 296) {
+        if ((heightArr[6] || 0) > 300) {
           return cancelAnimationFrame(animateId)
         }
         runAnimation();
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   chatItem: {
     width: 40,
-    height: 290,
+    height: 295,
     justifyContent: 'flex-end',
     alignItems: 'center'
   },
